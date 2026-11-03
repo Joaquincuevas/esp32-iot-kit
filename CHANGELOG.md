@@ -18,5 +18,5 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Grafana con datasource y dashboard de temperatura y humedad por dispositivo provisionados automáticamente.
 - Documentación de hardware y troubleshooting, y CI con GitHub Actions.
 
-[Unreleased]: https://github.com/OWNER/esp32-iot-kit/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/OWNER/esp32-iot-kit/releases/tag/v0.1.0
+[Unreleased]: https://github.com/joaquincuevas/esp32-iot-kit/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/joaquincuevas/esp32-iot-kit/releases/tag/v0.1.0
