@@ -2,6 +2,8 @@
 
 Plantilla IoT lista para usar: un ESP32 con DHT22 publica temperatura y humedad por MQTT y las ves en Grafana en minutos.
 
+[Read in English](../README.md)
+
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 [![CI](https://github.com/joaquincuevas/esp32-iot-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/joaquincuevas/esp32-iot-kit/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)](../CHANGELOG.md)

@@ -1,18 +1,20 @@
 # esp32-iot-kit
 
-Plantilla IoT lista para usar: un ESP32 con DHT22 publica temperatura y humedad por MQTT y las ves en Grafana en minutos.
+Ready-to-use IoT template: an ESP32 with a DHT22 publishes temperature and humidity over MQTT, and you see them in Grafana within minutes.
+
+[Leer en español](docs/README.es.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/joaquincuevas/esp32-iot-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/joaquincuevas/esp32-iot-kit/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)](CHANGELOG.md)
 
-![Dashboard de Grafana con paneles de temperatura y humedad](docs/img/dashboard.png)
+![Grafana dashboard with temperature and humidity panels](docs/img/dashboard.png)
 
-## Arquitectura
+## Architecture
 
 ```mermaid
 flowchart LR
-    subgraph Dispositivo
+    subgraph Device
         DHT[DHT22] -->|GPIO4| ESP[ESP32]
     end
     subgraph "Docker Compose"
@@ -22,27 +24,27 @@ flowchart LR
         GR[Grafana<br/>:3000]
     end
     ESP -->|"WiFi · MQTT<br/>devices/{id}/telemetry"| MQ
-    MQ -->|"suscribe devices/+/telemetry"| BR
+    MQ -->|"subscribes devices/+/telemetry"| BR
     BR -->|"measurement climate"| IN
     IN -->|Flux| GR
 ```
 
-El ESP32 lee el sensor cada 60 s y publica en `devices/{device_id}/telemetry`:
+The ESP32 reads the sensor every 60 s and publishes to `devices/{device_id}/telemetry`:
 
 ```json
 {"temperature": 23.40, "humidity": 45.10, "ts": 1762171200}
 ```
 
-El bridge valida cada mensaje y lo escribe en InfluxDB (measurement `climate`, tag `device_id`, fields `temperature` y `humidity`). Grafana arranca con el datasource y el dashboard ya configurados.
+The bridge validates each message and writes it to InfluxDB (measurement `climate`, tag `device_id`, fields `temperature` and `humidity`). Grafana starts with the datasource and dashboard already provisioned.
 
-## Hardware requerido
+## Required hardware
 
-| Componente | Cantidad |
+| Component | Quantity |
 |---|---|
 | ESP32 DevKit (ESP32-WROOM-32) | 1 |
-| Sensor DHT22 (AM2302), idealmente en módulo de 3 pines | 1 |
-| Resistencia 10 kΩ (solo si el DHT22 no viene en módulo) | 1 |
-| Cable USB de datos y 3 cables dupont | — |
+| DHT22 (AM2302) sensor, preferably on a 3-pin module | 1 |
+| 10 kΩ resistor (only if the DHT22 is not on a module) | 1 |
+| USB data cable and 3 dupont wires | — |
 
 | DHT22 | ESP32 |
 |---|---|
@@ -50,98 +52,98 @@ El bridge valida cada mensaje y lo escribe en InfluxDB (measurement `climate`, t
 | DATA (`out`) | `GPIO4` |
 | GND (`-`) | `GND` |
 
-Diagrama del sensor suelto, alimentación y calibración en [docs/hardware.md](docs/hardware.md).
+Bare-sensor wiring diagram, power and calibration: [docs/hardware.md](docs/hardware.md) (Spanish).
 
-**Software:** Docker con Compose v2.20 o superior y [PlatformIO](https://platformio.org/install/cli) (CLI o extensión de VS Code). El firmware fija la plataforma `espressif32@6.9.0` (core Arduino-ESP32 2.0.17, ESP-IDF 4.4.7) en [platformio.ini](firmware/platformio.ini).
+**Software:** Docker with Compose v2.20 or later and [PlatformIO](https://platformio.org/install/cli) (CLI or VS Code extension). The firmware pins the `espressif32@6.9.0` platform (Arduino-ESP32 core 2.0.17, ESP-IDF 4.4.7) in [platformio.ini](firmware/platformio.ini).
 
-## Inicio rápido
+## Quick start
 
-1. Clona el repositorio:
+1. Clone the repository:
    ```bash
    git clone https://github.com/joaquincuevas/esp32-iot-kit.git && cd esp32-iot-kit
    ```
-2. Crea `.env` y cambia **todos** los valores `change-me-*` (por ejemplo con `openssl rand -hex 24`):
+2. Create `.env` and replace **every** `change-me-*` value (for example with `openssl rand -hex 24`):
    ```bash
    cp .env.example .env
    ```
-3. Levanta Mosquitto, InfluxDB, Grafana y el bridge:
+3. Start Mosquitto, InfluxDB, Grafana and the bridge:
    ```bash
    docker compose up -d
    ```
-4. Crea la configuración del firmware y completa WiFi, `MQTT_HOST` (la IP de tu equipo en la red local) y las credenciales MQTT de `.env`:
+4. Create the firmware config and fill in WiFi, `MQTT_HOST` (your machine's IP on the local network) and the MQTT credentials from `.env`:
    ```bash
    cp firmware/include/config.example.h firmware/include/config.h
    ```
-5. Conecta el ESP32 por USB, súbele el firmware y mira el log serie:
+5. Connect the ESP32 over USB, flash the firmware and watch the serial log:
    ```bash
    cd firmware && pio run -t upload && pio device monitor
    ```
 
-Abre <http://localhost:3000/d/esp32-climate> (usuario y contraseña: `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD`). La primera lectura llega al conectar.
+Open <http://localhost:3000/d/esp32-climate> (user and password: `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD`). The first reading arrives as soon as the device connects.
 
-## Configuración
+## Configuration
 
-### Servidor (`.env`)
+### Server (`.env`)
 
-| Variable | Descripción | Ejemplo |
+| Variable | Description | Example |
 |---|---|---|
-| `MQTT_USER` | Usuario MQTT para el ESP32 y el bridge | `esp32` |
-| `MQTT_PASSWORD` | Contraseña MQTT | — |
-| `INFLUX_ADMIN_USER` | Usuario admin de la UI de InfluxDB | `admin` |
-| `INFLUX_ADMIN_PASSWORD` | Contraseña admin de InfluxDB (mín. 8 caracteres) | — |
-| `INFLUX_ORG` | Organización de InfluxDB | `esp32-iot-kit` |
-| `INFLUX_BUCKET` | Bucket donde se guardan las lecturas | `telemetry` |
-| `INFLUX_TOKEN` | Token admin, usado por el bridge y Grafana | — |
-| `GRAFANA_ADMIN_USER` | Usuario admin de Grafana | `admin` |
-| `GRAFANA_ADMIN_PASSWORD` | Contraseña admin de Grafana | — |
+| `MQTT_USER` | MQTT user for the ESP32 and the bridge | `esp32` |
+| `MQTT_PASSWORD` | MQTT password | — |
+| `INFLUX_ADMIN_USER` | InfluxDB UI admin user | `admin` |
+| `INFLUX_ADMIN_PASSWORD` | InfluxDB admin password (min. 8 characters) | — |
+| `INFLUX_ORG` | InfluxDB organization | `esp32-iot-kit` |
+| `INFLUX_BUCKET` | Bucket where readings are stored | `telemetry` |
+| `INFLUX_TOKEN` | Admin token, used by the bridge and Grafana | — |
+| `GRAFANA_ADMIN_USER` | Grafana admin user | `admin` |
+| `GRAFANA_ADMIN_PASSWORD` | Grafana admin password | — |
 
-Las variables `INFLUX_*` solo se aplican en el primer arranque (ver [troubleshooting](docs/troubleshooting.md#influxdb-rechaza-el-token-después-de-editar-env)). El bridge también puede correr fuera de Docker leyendo `MQTT_HOST`, `MQTT_PORT` (por defecto `1883`) e `INFLUX_URL` del entorno.
+The `INFLUX_*` variables are applied only on first start (see [troubleshooting](docs/troubleshooting.md#influxdb-rechaza-el-token-después-de-editar-env)). The bridge can also run outside Docker, reading `MQTT_HOST`, `MQTT_PORT` (default `1883`) and `INFLUX_URL` from the environment.
 
 ### Firmware (`firmware/include/config.h`)
 
-| Constante | Descripción | Por defecto |
+| Constant | Description | Default |
 |---|---|---|
-| `WIFI_SSID` / `WIFI_PASSWORD` | Red WiFi de **2,4 GHz** | — |
-| `MQTT_HOST` | IP local del equipo con Docker | `192.168.1.100` |
-| `MQTT_PORT` | Puerto de Mosquitto | `1883` |
-| `MQTT_USER` / `MQTT_PASSWORD` | Mismos valores que en `.env` | — |
-| `DEVICE_ID` | Identificador único; va en el topic y en el tag de InfluxDB | `esp32-01` |
-| `DHT_PIN` | GPIO de datos del DHT22 | `4` |
-| `READ_INTERVAL_MS` | Intervalo entre lecturas | `60000` |
-| `TEMP_OFFSET_C` / `HUMIDITY_OFFSET` | Calibración que se suma a cada lectura | `0.0` |
-| `NTP_SERVER` | Servidor de hora para el campo `ts` | `pool.ntp.org` |
+| `WIFI_SSID` / `WIFI_PASSWORD` | **2.4 GHz** WiFi network | — |
+| `MQTT_HOST` | Local IP of the machine running Docker | `192.168.1.100` |
+| `MQTT_PORT` | Mosquitto port | `1883` |
+| `MQTT_USER` / `MQTT_PASSWORD` | Same values as in `.env` | — |
+| `DEVICE_ID` | Unique identifier; used in the topic and the InfluxDB tag | `esp32-01` |
+| `DHT_PIN` | DHT22 data GPIO | `4` |
+| `READ_INTERVAL_MS` | Interval between readings | `60000` |
+| `TEMP_OFFSET_C` / `HUMIDITY_OFFSET` | Calibration added to every reading | `0.0` |
+| `NTP_SERVER` | Time server for the `ts` field | `pool.ntp.org` |
 
-`config.h` está en `.gitignore`. Sin él, `pio run` compila con los valores de ejemplo y muestra un aviso.
+`config.h` is in `.gitignore`. Without it, `pio run` builds with the example values and prints a warning.
 
-## Puertos
+## Ports
 
-| Servicio | Puerto | Accesible desde |
+| Service | Port | Reachable from |
 |---|---|---|
-| Mosquitto | `1883` | Red local (lo usan los ESP32) |
-| Grafana | `3000` | Red local |
-| InfluxDB | `8086` | Solo `localhost` |
+| Mosquitto | `1883` | Local network (used by the ESP32 devices) |
+| Grafana | `3000` | Local network |
+| InfluxDB | `8086` | `localhost` only |
 
-## Limitaciones
+## Limitations
 
-- **v0.1 no almacena lecturas sin conexión MQTT.** Si el WiFi o el broker caen, esas lecturas se pierden.
-- MQTT viaja sin TLS: pensado para una red local de confianza, no para exponer el puerto 1883 a internet.
-- Todos los dispositivos y el bridge comparten un único usuario MQTT, sin ACL por dispositivo.
-- Solo soporta el sensor DHT22 y redes WiFi de 2,4 GHz.
-- Si el ESP32 no logra sincronizar NTP, el bridge usa la hora de recepción como timestamp.
+- **v0.1 does not store readings while the MQTT connection is down.** If WiFi or the broker goes down, those readings are lost.
+- MQTT runs without TLS: meant for a trusted local network, not for exposing port 1883 to the internet.
+- All devices and the bridge share a single MQTT user, with no per-device ACL.
+- Only the DHT22 sensor and 2.4 GHz WiFi networks are supported.
+- If the ESP32 cannot sync NTP, the bridge uses the receive time as the timestamp.
 
 ## Troubleshooting
 
-Los problemas más comunes (puerto serie, WiFi de 5 GHz, credenciales MQTT, NTP sin sincronizar o la ausencia de datos en Grafana) están en [docs/troubleshooting.md](docs/troubleshooting.md).
+The most common issues (serial port, 5 GHz WiFi, MQTT credentials, NTP not synced, no data in Grafana) are covered in [docs/troubleshooting.md](docs/troubleshooting.md) (Spanish).
 
 ## Roadmap
 
-- **v0.2:** aprovisionamiento de WiFi y MQTT por portal cautivo (sin recompilar) y deep sleep para funcionar con batería.
-- **v0.3:** actualizaciones OTA firmadas.
+- **v0.2:** captive portal provisioning for WiFi and MQTT (no recompiling) and deep sleep for battery operation.
+- **v0.3:** signed OTA updates.
 
-## Contribuir
+## Contributing
 
-Los issues y PR son bienvenidos. Lee [CONTRIBUTING.md](CONTRIBUTING.md) para preparar el entorno y ejecutar los tests.
+Issues and PRs are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) to set up the environment and run the tests.
 
-## Licencia
+## License
 
 [MIT](LICENSE) © 2026 Joaquin
