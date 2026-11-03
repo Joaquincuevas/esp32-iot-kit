@@ -1,6 +1,6 @@
 # Captura del dashboard
 
-El README muestra [`img/dashboard.svg`](img/dashboard.svg), que de momento es un **marcador**. Reemplázalo por una captura real siguiendo estos pasos.
+El README muestra [`img/dashboard.png`](img/dashboard.png): una captura real del dashboard provisionado, 1600×900, con 24 h de datos de demostración de `demo-01`. Sigue estos pasos para regenerarla si cambias el dashboard.
 
 ## 1. Levanta el stack y genera datos de demostración
 
@@ -18,15 +18,15 @@ También puedes dejar uno o dos ESP32 reales publicando unas horas: queda más n
 
 1. Abre <http://localhost:3000/d/esp32-climate> e inicia sesión con `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD`.
 2. Rango de tiempo: **Last 24 hours**. Tema: oscuro (el predeterminado).
-3. Pulsa `v` sobre un panel o usa el modo kiosko (`?kiosk`) para ocultar menús: <http://localhost:3000/d/esp32-climate?kiosk&from=now-24h&to=now>
+3. Pulsa `v` sobre un panel o usa el modo kiosko (`?kiosk`) para ocultar menús y el usuario. `var-device=demo-01` deja fuera otros dispositivos: <http://localhost:3000/d/esp32-climate?kiosk&from=now-24h&to=now&var-device=demo-01>
 4. Ventana del navegador a **1600×900** aprox. y captura:
    - **PNG:** `Cmd+Shift+4` (macOS), `Win+Shift+S` (Windows).
    - **GIF** (opcional, p. ej. mostrando el selector de dispositivo): [Kap](https://getkap.co/) en macOS o [Peek](https://github.com/phw/peek) en Linux. Máximo ~5 MB y ~10 s.
 5. Optimiza el archivo (`pngquant` o `gifsicle -O3`) y guárdalo como `docs/img/dashboard.png` (o `.gif`).
 
-## 3. Actualiza el README
+## 3. Revisa y haz commit
 
-Cambia la ruta de la imagen en `README.md`, borra `docs/img/dashboard.svg` y haz commit.
+Comprueba que los paneles tengan datos y que no se vea el usuario, ningún token ni la contraseña. Sobrescribe `docs/img/dashboard.png` (si usas GIF, cambia también la ruta en `README.md`) y haz commit.
 
 ## Limpiar los datos de demostración
 
