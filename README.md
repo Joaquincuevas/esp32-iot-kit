@@ -6,9 +6,36 @@ Ready-to-use IoT template: an ESP32 with a DHT22 publishes temperature and humid
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/joaquincuevas/esp32-iot-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/joaquincuevas/esp32-iot-kit/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)](CHANGELOG.md)
+[![Release](https://img.shields.io/github/v/release/joaquincuevas/esp32-iot-kit)](https://github.com/joaquincuevas/esp32-iot-kit/releases)
 
 ![Grafana dashboard with temperature and humidity panels](docs/img/dashboard.png)
+
+## Quick start
+
+Requires an ESP32 DevKit with a DHT22 sensor ([wiring](#required-hardware)), Docker with Compose v2.20+ and [PlatformIO](https://platformio.org/install/cli).
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/joaquincuevas/esp32-iot-kit.git && cd esp32-iot-kit
+   ```
+2. Create `.env` and replace **every** `change-me-*` value (for example with `openssl rand -hex 24`):
+   ```bash
+   cp .env.example .env
+   ```
+3. Start Mosquitto, InfluxDB, Grafana and the bridge:
+   ```bash
+   docker compose up -d
+   ```
+4. Create the firmware config and fill in WiFi, `MQTT_HOST` (your machine's IP on the local network) and the MQTT credentials from `.env`:
+   ```bash
+   cp firmware/include/config.example.h firmware/include/config.h
+   ```
+5. Connect the ESP32 over USB, flash the firmware and watch the serial log:
+   ```bash
+   cd firmware && pio run -t upload && pio device monitor
+   ```
+
+Open <http://localhost:3000/d/esp32-climate> (user and password: `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD`). The first reading arrives as soon as the device connects.
 
 ## Architecture
 
@@ -55,31 +82,6 @@ The bridge validates each message and writes it to InfluxDB (measurement `climat
 Bare-sensor wiring diagram, power and calibration: [docs/hardware.md](docs/hardware.md) (Spanish).
 
 **Software:** Docker with Compose v2.20 or later and [PlatformIO](https://platformio.org/install/cli) (CLI or VS Code extension). The firmware pins the `espressif32@6.9.0` platform (Arduino-ESP32 core 2.0.17, ESP-IDF 4.4.7) in [platformio.ini](firmware/platformio.ini).
-
-## Quick start
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/joaquincuevas/esp32-iot-kit.git && cd esp32-iot-kit
-   ```
-2. Create `.env` and replace **every** `change-me-*` value (for example with `openssl rand -hex 24`):
-   ```bash
-   cp .env.example .env
-   ```
-3. Start Mosquitto, InfluxDB, Grafana and the bridge:
-   ```bash
-   docker compose up -d
-   ```
-4. Create the firmware config and fill in WiFi, `MQTT_HOST` (your machine's IP on the local network) and the MQTT credentials from `.env`:
-   ```bash
-   cp firmware/include/config.example.h firmware/include/config.h
-   ```
-5. Connect the ESP32 over USB, flash the firmware and watch the serial log:
-   ```bash
-   cd firmware && pio run -t upload && pio device monitor
-   ```
-
-Open <http://localhost:3000/d/esp32-climate> (user and password: `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD`). The first reading arrives as soon as the device connects.
 
 ## Configuration
 
