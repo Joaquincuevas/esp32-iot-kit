@@ -7,6 +7,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-24
+
 ### Added
 
 - El firmware se detiene con un mensaje `[config]` claro si `config.h` conserva las credenciales de ejemplo.
@@ -33,5 +35,6 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Grafana con datasource y dashboard de temperatura y humedad por dispositivo provisionados automáticamente.
 - Documentación de hardware y troubleshooting, y CI con GitHub Actions.
 
-[Unreleased]: https://github.com/joaquincuevas/esp32-iot-kit/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/joaquincuevas/esp32-iot-kit/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/joaquincuevas/esp32-iot-kit/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/joaquincuevas/esp32-iot-kit/releases/tag/v0.1.0

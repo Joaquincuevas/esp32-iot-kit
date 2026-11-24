@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-24
+
 ### Added
 
 - The firmware stops with a clear `[config]` message when `config.h` still has the example credentials.
@@ -33,5 +35,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Grafana with an automatically provisioned datasource and a temperature and humidity dashboard per device.
 - Hardware and troubleshooting documentation, and CI with GitHub Actions.
 
-[Unreleased]: https://github.com/joaquincuevas/esp32-iot-kit/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/joaquincuevas/esp32-iot-kit/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/joaquincuevas/esp32-iot-kit/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/joaquincuevas/esp32-iot-kit/releases/tag/v0.1.0
