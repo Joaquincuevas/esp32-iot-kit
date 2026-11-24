@@ -79,7 +79,7 @@ The bridge validates each message and writes it to InfluxDB (measurement `climat
 | DATA (`out`) | `GPIO4` |
 | GND (`-`) | `GND` |
 
-Bare-sensor wiring diagram, power and calibration: [docs/hardware.md](docs/hardware.md) (Spanish).
+Bare-sensor wiring diagram, power and calibration: [docs/hardware.md](docs/hardware.md).
 
 **Software:** Docker with Compose v2.20 or later and [PlatformIO](https://platformio.org/install/cli) (CLI or VS Code extension). The firmware pins the `espressif32@6.9.0` platform (Arduino-ESP32 core 2.0.17, ESP-IDF 4.4.7) in [platformio.ini](firmware/platformio.ini).
 
@@ -99,7 +99,7 @@ Bare-sensor wiring diagram, power and calibration: [docs/hardware.md](docs/hardw
 | `GRAFANA_ADMIN_USER` | Grafana admin user | `admin` |
 | `GRAFANA_ADMIN_PASSWORD` | Grafana admin password | — |
 
-The `INFLUX_*` variables are applied only on first start (see [troubleshooting](docs/troubleshooting.md#influxdb-rechaza-el-token-después-de-editar-env)). The bridge can also run outside Docker, reading `MQTT_HOST`, `MQTT_PORT` (default `1883`) and `INFLUX_URL` from the environment. If any required variable is missing, the bridge exits at startup and lists all of them.
+The `INFLUX_*` variables are applied only on first start (see [troubleshooting](docs/troubleshooting.md#influxdb-rejects-the-token-after-editing-env)). The bridge can also run outside Docker, reading `MQTT_HOST`, `MQTT_PORT` (default `1883`) and `INFLUX_URL` from the environment. If any required variable is missing, the bridge exits at startup and lists all of them.
 
 ### Firmware (`firmware/include/config.h`)
 
@@ -135,7 +135,7 @@ The `INFLUX_*` variables are applied only on first start (see [troubleshooting](
 
 ## Troubleshooting
 
-The most common issues (serial port, 5 GHz WiFi, MQTT credentials, NTP not synced, no data in Grafana) are covered in [docs/troubleshooting.md](docs/troubleshooting.md) (Spanish).
+The most common issues (serial port, 5 GHz WiFi, MQTT credentials, NTP not synced, no data in Grafana) are covered in [docs/troubleshooting.md](docs/troubleshooting.md).
 
 ## Roadmap
 

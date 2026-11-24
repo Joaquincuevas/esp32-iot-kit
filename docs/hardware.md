@@ -1,34 +1,36 @@
 # Hardware
 
-## Componentes
+[Leer en español](es/hardware.md)
 
-| Componente | Notas |
+## Components
+
+| Component | Notes |
 |---|---|
-| ESP32 DevKit (ESP32-WROOM-32, 30 o 38 pines) | Cualquier placa compatible con el target `esp32dev` de PlatformIO. |
-| Sensor DHT22 (AM2302) | Módulo de 3 pines (recomendado, trae resistencia pull-up) o sensor suelto de 4 pines. |
-| Resistencia 10 kΩ | Solo si usas el sensor suelto. |
-| Cable micro-USB / USB-C **de datos** | Muchos cables solo cargan y la placa no aparece como puerto serie. |
-| 3 cables dupont | Hembra-hembra para módulo; protoboard para sensor suelto. |
+| ESP32 DevKit (ESP32-WROOM-32, 30 or 38 pins) | Any board compatible with the PlatformIO `esp32dev` target. |
+| DHT22 (AM2302) sensor | 3-pin module (recommended, includes a pull-up resistor) or a bare 4-pin sensor. |
+| 10 kΩ resistor | Only if you use the bare sensor. |
+| Micro-USB / USB-C **data** cable | Many cables only charge and the board will not show up as a serial port. |
+| 3 dupont wires | Female-to-female for the module; breadboard for the bare sensor. |
 
-## Cableado
+## Wiring
 
-El firmware usa **GPIO4** para datos (`DHT_PIN` en `config.h`).
+The firmware uses **GPIO4** for data (`DHT_PIN` in `config.h`).
 
-### Módulo DHT22 (3 pines)
+### DHT22 module (3 pins)
 
-| Pin del módulo | Pin del ESP32 |
+| Module pin | ESP32 pin |
 |---|---|
 | `+` / VCC | `3V3` |
-| `out` / DATA | `GPIO4` (rotulado `D4` o `P4` en muchas placas) |
+| `out` / DATA | `GPIO4` (labeled `D4` or `P4` on many boards) |
 | `-` / GND | `GND` |
 
-### Sensor DHT22 suelto (4 pines, rejilla hacia ti, de izquierda a derecha)
+### Bare DHT22 sensor (4 pins, grille facing you, left to right)
 
-| Pin DHT22 | Conexión |
+| DHT22 pin | Connection |
 |---|---|
 | 1 VCC | `3V3` |
-| 2 DATA | `GPIO4` + resistencia 10 kΩ hacia `3V3` |
-| 3 NC | sin conexión |
+| 2 DATA | `GPIO4` + 10 kΩ resistor to `3V3` |
+| 3 NC | not connected |
 | 4 GND | `GND` |
 
 ```
@@ -40,25 +42,25 @@ ESP32 GPIO4 ┴──────────── DHT22 pin 2 (DATA)
 ESP32 GND ─────────────── DHT22 pin 4 (GND)
 ```
 
-## Alimentación
+## Power
 
-- El ESP32 se alimenta por USB (5 V); su regulador entrega 3,3 V en el pin `3V3`.
-- El DHT22 funciona entre 3,3 V y 6 V y consume ~1,5 mA midiendo. Aliméntalo desde `3V3` para que la señal DATA quede a 3,3 V, que es el nivel lógico del ESP32. **No uses 5 V con el pin DATA conectado directo al ESP32.**
-- A 3,3 V mantén el cable del sensor corto (< 1 m). Para distancias mayores, usa cable apantallado o baja la resistencia pull-up a 4,7 kΩ.
-- Para uso permanente basta un cargador USB de 5 V / 1 A. El consumo medio de la placa con WiFi activo ronda los 80–120 mA (el modo deep sleep llega en v0.2).
+- The ESP32 is powered over USB (5 V); its regulator provides 3.3 V on the `3V3` pin.
+- The DHT22 works from 3.3 V to 6 V and draws ~1.5 mA while measuring. Power it from `3V3` so the DATA signal stays at 3.3 V, the ESP32's logic level. **Do not use 5 V with the DATA pin connected directly to the ESP32.**
+- At 3.3 V keep the sensor cable short (< 1 m). For longer distances, use shielded cable or lower the pull-up resistor to 4.7 kΩ.
+- For permanent use a 5 V / 1 A USB charger is enough. The board's average consumption with WiFi active is around 80–120 mA (deep sleep arrives in v0.2).
 
-## Si cambias de pin
+## If you change the pin
 
-Usa un GPIO bidireccional que no sea de arranque ni de flash:
+Use a bidirectional GPIO that is not a boot or flash pin:
 
-- Evita `GPIO6`–`GPIO11` (flash interna).
-- Evita `GPIO34`–`GPIO39` (solo entrada; el DHT22 necesita salida).
-- Evita `GPIO0`, `GPIO2`, `GPIO5`, `GPIO12` y `GPIO15` (pines de arranque).
+- Avoid `GPIO6`–`GPIO11` (internal flash).
+- Avoid `GPIO34`–`GPIO39` (input only; the DHT22 needs output).
+- Avoid `GPIO0`, `GPIO2`, `GPIO5`, `GPIO12` and `GPIO15` (boot pins).
 
-Buenas alternativas: `GPIO13`, `GPIO14`, `GPIO16`, `GPIO17`, `GPIO25`, `GPIO26`, `GPIO27`, `GPIO32`, `GPIO33`.
+Good alternatives: `GPIO13`, `GPIO14`, `GPIO16`, `GPIO17`, `GPIO25`, `GPIO26`, `GPIO27`, `GPIO32`, `GPIO33`.
 
-## Calibración
+## Calibration
 
-El DHT22 tiene una precisión típica de ±0,5 °C y ±2–5 % HR, y cada unidad se desvía un poco distinto. Compáralo durante un rato con un termohigrómetro de referencia y ajusta `TEMP_OFFSET_C` y `HUMIDITY_OFFSET` en `config.h`. El offset se suma a cada lectura.
+The DHT22 has a typical accuracy of ±0.5 °C and ±2–5 % RH, and each unit drifts a little differently. Compare it for a while against a reference thermo-hygrometer and adjust `TEMP_OFFSET_C` and `HUMIDITY_OFFSET` in `config.h`. The offset is added to every reading.
 
-Coloca el sensor lejos del regulador del ESP32 y de fuentes de calor: la placa se calienta con el WiFi activo y puede subir la temperatura medida en 1–2 °C si están pegados.
+Place the sensor away from the ESP32 regulator and heat sources: the board warms up with WiFi active and can raise the measured temperature by 1–2 °C if they are touching.

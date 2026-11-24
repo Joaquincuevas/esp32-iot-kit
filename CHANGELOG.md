@@ -1,32 +1,37 @@
 # Changelog
 
-Todos los cambios relevantes de este proyecto se documentan aquí.
-El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el proyecto usa [Semantic Versioning](https://semver.org/lang/es/).
+[Leer en español](docs/es/CHANGELOG.md)
+
+All notable changes to this project are documented here.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
 ### Added
 
-- El firmware se detiene con un mensaje `[config]` claro si `config.h` conserva las credenciales de ejemplo.
-- Tests del bridge para la reconexión (re-suscripción), credenciales rechazadas, mensajes descartados y la escritura a InfluxDB.
-- Job de CI que valida el archivo de Docker Compose con `.env.example`.
+- The firmware stops with a clear `[config]` message when `config.h` still has the example credentials.
+- Bridge tests for reconnection (re-subscribing), refused credentials, dropped messages and the InfluxDB write.
+- Mosquitto and the bridge refuse to start, with a clear message, when a value keeps the `change-me` prefix from `.env.example`.
+- CI job that validates the Docker Compose file with `.env.example` and runs the Mosquitto entrypoint shell test.
 
 ### Changed
 
-- El bridge informa de una sola vez todas las variables de entorno que faltan y valida `MQTT_PORT`, en lugar de fallar con la primera o con un traceback.
+- The bridge reports every missing environment variable at once and validates `MQTT_PORT`, instead of failing on the first one or with a traceback.
+- `docker compose up` without `.env` says to copy `.env.example` instead of showing a path error.
+- The documentation (hardware, troubleshooting, CONTRIBUTING and CHANGELOG) is now in English; the Spanish versions are in `docs/es/`.
 
 ## [0.1.0] - 2026-11-03
 
 ### Added
 
-- Firmware ESP32 (PlatformIO, Arduino): lectura de DHT22 con intervalo configurable y publicación JSON en `devices/{device_id}/telemetry`.
-- Reconexión WiFi y MQTT con backoff exponencial (1 s a 60 s).
-- Timestamp por NTP; si no hay sincronización, el mensaje se envía sin `ts`.
-- Offsets de calibración de temperatura y humedad.
-- Bridge Python 3.12 de MQTT a InfluxDB 2 con validación de mensajes, reconexión y tests con pytest.
-- Docker Compose con Mosquitto (autenticación obligatoria), InfluxDB 2, Grafana y el bridge.
-- Grafana con datasource y dashboard de temperatura y humedad por dispositivo provisionados automáticamente.
-- Documentación de hardware y troubleshooting, y CI con GitHub Actions.
+- ESP32 firmware (PlatformIO, Arduino): DHT22 reading with a configurable interval and JSON publishing to `devices/{device_id}/telemetry`.
+- WiFi and MQTT reconnection with exponential backoff (1 s to 60 s).
+- NTP timestamp; without synchronization, the message is sent without `ts`.
+- Temperature and humidity calibration offsets.
+- Python 3.12 MQTT-to-InfluxDB 2 bridge with message validation, reconnection and pytest tests.
+- Docker Compose with Mosquitto (mandatory authentication), InfluxDB 2, Grafana and the bridge.
+- Grafana with an automatically provisioned datasource and a temperature and humidity dashboard per device.
+- Hardware and troubleshooting documentation, and CI with GitHub Actions.
 
 [Unreleased]: https://github.com/joaquincuevas/esp32-iot-kit/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/joaquincuevas/esp32-iot-kit/releases/tag/v0.1.0
