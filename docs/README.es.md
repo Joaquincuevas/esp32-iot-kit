@@ -99,7 +99,7 @@ Diagrama del sensor suelto, alimentación y calibración en [docs/hardware.md](h
 | `GRAFANA_ADMIN_USER` | Usuario admin de Grafana | `admin` |
 | `GRAFANA_ADMIN_PASSWORD` | Contraseña admin de Grafana | — |
 
-Las variables `INFLUX_*` solo se aplican en el primer arranque (ver [troubleshooting](troubleshooting.md#influxdb-rechaza-el-token-después-de-editar-env)). El bridge también puede correr fuera de Docker leyendo `MQTT_HOST`, `MQTT_PORT` (por defecto `1883`) e `INFLUX_URL` del entorno.
+Las variables `INFLUX_*` solo se aplican en el primer arranque (ver [troubleshooting](troubleshooting.md#influxdb-rechaza-el-token-después-de-editar-env)). El bridge también puede correr fuera de Docker leyendo `MQTT_HOST`, `MQTT_PORT` (por defecto `1883`) e `INFLUX_URL` del entorno. Si falta alguna variable obligatoria, el bridge termina al arrancar y las lista todas.
 
 ### Firmware (`firmware/include/config.h`)
 
@@ -115,7 +115,7 @@ Las variables `INFLUX_*` solo se aplican en el primer arranque (ver [troubleshoo
 | `TEMP_OFFSET_C` / `HUMIDITY_OFFSET` | Calibración que se suma a cada lectura | `0.0` |
 | `NTP_SERVER` | Servidor de hora para el campo `ts` | `pool.ntp.org` |
 
-`config.h` está en `.gitignore`. Sin él, `pio run` compila con los valores de ejemplo y muestra un aviso.
+`config.h` está en `.gitignore`. Sin él, `pio run` compila con los valores de ejemplo y muestra un aviso. Si las credenciales WiFi o MQTT conservan su valor de ejemplo, el firmware no se conecta y imprime un mensaje `[config]` cada 5 s.
 
 ## Puertos
 

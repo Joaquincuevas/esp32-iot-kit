@@ -99,7 +99,7 @@ Bare-sensor wiring diagram, power and calibration: [docs/hardware.md](docs/hardw
 | `GRAFANA_ADMIN_USER` | Grafana admin user | `admin` |
 | `GRAFANA_ADMIN_PASSWORD` | Grafana admin password | — |
 
-The `INFLUX_*` variables are applied only on first start (see [troubleshooting](docs/troubleshooting.md#influxdb-rechaza-el-token-después-de-editar-env)). The bridge can also run outside Docker, reading `MQTT_HOST`, `MQTT_PORT` (default `1883`) and `INFLUX_URL` from the environment.
+The `INFLUX_*` variables are applied only on first start (see [troubleshooting](docs/troubleshooting.md#influxdb-rechaza-el-token-después-de-editar-env)). The bridge can also run outside Docker, reading `MQTT_HOST`, `MQTT_PORT` (default `1883`) and `INFLUX_URL` from the environment. If any required variable is missing, the bridge exits at startup and lists all of them.
 
 ### Firmware (`firmware/include/config.h`)
 
@@ -115,7 +115,7 @@ The `INFLUX_*` variables are applied only on first start (see [troubleshooting](
 | `TEMP_OFFSET_C` / `HUMIDITY_OFFSET` | Calibration added to every reading | `0.0` |
 | `NTP_SERVER` | Time server for the `ts` field | `pool.ntp.org` |
 
-`config.h` is in `.gitignore`. Without it, `pio run` builds with the example values and prints a warning.
+`config.h` is in `.gitignore`. Without it, `pio run` builds with the example values and prints a warning. If the WiFi or MQTT credentials still have their example values, the firmware does not connect and prints a `[config]` message every 5 s.
 
 ## Ports
 

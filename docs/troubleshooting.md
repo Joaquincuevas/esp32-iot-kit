@@ -33,6 +33,22 @@ Mantén pulsado el botón **BOOT** cuando aparezca `Connecting....` y suéltalo 
 
 ---
 
+## `[config] ... still has its example value`
+
+**Síntoma:** el monitor serie repite cada 5 s que `WIFI_SSID`, `WIFI_PASSWORD`, `MQTT_USER` o `MQTT_PASSWORD` conservan su valor de ejemplo, y el ESP32 no intenta conectarse.
+
+Copia `firmware/include/config.example.h` a `firmware/include/config.h`, reemplaza esos cuatro valores (el usuario y la contraseña MQTT son los de `.env`) y vuelve a subir el firmware con `pio run -t upload`.
+
+---
+
+## El bridge termina con `Missing required environment variables`
+
+**Síntoma:** `docker compose logs bridge` muestra la lista de variables que faltan y el contenedor se reinicia en bucle.
+
+Crea `.env` con `cp .env.example .env` y completa todos los valores; luego `docker compose up -d`. Si ejecutas el bridge fuera de Docker, exporta también `MQTT_HOST` e `INFLUX_URL`.
+
+---
+
 ## WiFi no conecta: `[wifi] failed, retry in ... ms`
 
 - **Red de 5 GHz:** el ESP32 solo soporta **2,4 GHz**. Si tu router usa un único nombre para ambas bandas (band steering), crea una red de 2,4 GHz separada o desactiva el steering.
