@@ -1,12 +1,14 @@
 # Troubleshooting
 
-Abre el monitor serie para ver qué está haciendo el ESP32:
+[Leer en español](es/troubleshooting.md)
+
+Open the serial monitor to see what the ESP32 is doing:
 
 ```bash
 cd firmware && pio device monitor
 ```
 
-Cada línea empieza con `[wifi]`, `[mqtt]` o `[dht]`. Del lado del servidor:
+Every line starts with `[wifi]`, `[mqtt]`, `[dht]` or `[config]`. On the server side:
 
 ```bash
 docker compose logs -f bridge mosquitto
@@ -14,107 +16,123 @@ docker compose logs -f bridge mosquitto
 
 ---
 
-## El ESP32 no aparece como puerto serie / `pio run -t upload` falla
+## The ESP32 does not show up as a serial port / `pio run -t upload` fails
 
-**Síntoma:** `Could not open port`, `No such file or directory: '/dev/ttyUSB0'` o la placa no aparece en `pio device list`.
+**Symptom:** `Could not open port`, `No such file or directory: '/dev/ttyUSB0'`, or the board does not appear in `pio device list`.
 
-1. **Cable:** prueba otro cable USB. Los cables que solo cargan son la causa más común.
-2. **Driver:** según el chip USB-serie de tu placa (está impreso al lado del conector):
-   - CP2102/CP2104 → driver *CP210x* de Silicon Labs.
-   - CH340/CH9102 → driver *CH34x* de WCH.
-   - En macOS recientes ambos suelen funcionar sin driver; en Windows normalmente hay que instalarlo.
-3. **Permisos (Linux):** `sudo usermod -aG dialout $USER` y vuelve a iniciar sesión.
-4. **Puerto ocupado:** cierra el monitor serie (u otro programa como Arduino IDE) antes de subir.
-5. **Varios puertos:** fija el correcto con `pio run -t upload --upload-port /dev/cu.usbserial-0001` (o `COM5` en Windows).
+1. **Cable:** try another USB cable. Charge-only cables are the most common cause.
+2. **Driver:** depending on your board's USB-serial chip (printed next to the connector):
+   - CP2102/CP2104 → Silicon Labs *CP210x* driver.
+   - CH340/CH9102 → WCH *CH34x* driver.
+   - Recent macOS versions usually work with both without a driver; on Windows you normally have to install it.
+3. **Permissions (Linux):** `sudo usermod -aG dialout $USER` and log in again.
+4. **Port in use:** close the serial monitor (or another program such as the Arduino IDE) before uploading.
+5. **Several ports:** pick the right one with `pio run -t upload --upload-port /dev/cu.usbserial-0001` (or `COM5` on Windows).
 
-**Síntoma:** `Failed to connect to ESP32: Timed out waiting for packet header`.
+**Symptom:** `Failed to connect to ESP32: Timed out waiting for packet header`.
 
-Mantén pulsado el botón **BOOT** cuando aparezca `Connecting....` y suéltalo cuando empiece a escribir. Algunas placas baratas no entran solas en modo de carga.
+Hold the **BOOT** button when `Connecting....` appears and release it when writing starts. Some cheap boards do not enter flashing mode on their own.
 
 ---
 
 ## `[config] ... still has its example value`
 
-**Síntoma:** el monitor serie repite cada 5 s que `WIFI_SSID`, `WIFI_PASSWORD`, `MQTT_USER` o `MQTT_PASSWORD` conservan su valor de ejemplo, y el ESP32 no intenta conectarse.
+**Symptom:** the serial monitor repeats every 5 s that `WIFI_SSID`, `WIFI_PASSWORD`, `MQTT_USER` or `MQTT_PASSWORD` still has its example value, and the ESP32 does not try to connect.
 
-Copia `firmware/include/config.example.h` a `firmware/include/config.h`, reemplaza esos cuatro valores (el usuario y la contraseña MQTT son los de `.env`) y vuelve a subir el firmware con `pio run -t upload`.
-
----
-
-## El bridge termina con `Missing required environment variables`
-
-**Síntoma:** `docker compose logs bridge` muestra la lista de variables que faltan y el contenedor se reinicia en bucle.
-
-Crea `.env` con `cp .env.example .env` y completa todos los valores; luego `docker compose up -d`. Si ejecutas el bridge fuera de Docker, exporta también `MQTT_HOST` e `INFLUX_URL`.
+Copy `firmware/include/config.example.h` to `firmware/include/config.h`, replace those four values (the MQTT user and password are the ones in `.env`) and flash again with `pio run -t upload`.
 
 ---
 
-## WiFi no conecta: `[wifi] failed, retry in ... ms`
+## Mosquitto or the bridge will not start: `still has its example value`
 
-- **Red de 5 GHz:** el ESP32 solo soporta **2,4 GHz**. Si tu router usa un único nombre para ambas bandas (band steering), crea una red de 2,4 GHz separada o desactiva el steering.
-- **WPA3 únicamente:** usa modo mixto WPA2/WPA3 o WPA2.
-- **SSID/contraseña:** distinguen mayúsculas; revisa `WIFI_SSID` y `WIFI_PASSWORD` en `firmware/include/config.h`.
-- **Señal débil:** acerca la placa al router para descartar alcance.
+**Symptom:** `docker compose logs mosquitto bridge` shows `MQTT_PASSWORD still has its example value` or `These variables still have their example value: ...`, and the containers restart in a loop.
 
-El firmware reintenta con backoff exponencial (1 s, 2 s, 4 s … máximo 60 s), así que no hace falta reiniciar la placa cuando el router vuelve.
+Mosquitto and the bridge refuse to start while any variable begins with `change-me`. Replace it in `.env` (for example with `openssl rand -hex 24`) and run `docker compose up -d`. On a fresh install, also change `INFLUX_ADMIN_PASSWORD` and `GRAFANA_ADMIN_PASSWORD`.
 
 ---
 
-## MQTT no conecta: `[mqtt] failed, state=N`
+## `docker compose up` says `... is missing - copy .env.example to .env`
 
-| `state` | Significado | Qué revisar |
+**Symptom:** `required variable MQTT_USER is missing a value`.
+
+The `.env` file is missing from the repo root, or a variable is empty. Run `cp .env.example .env` and replace every value.
+
+---
+
+## The bridge exits with `Missing required environment variables`
+
+**Symptom:** `docker compose logs bridge` lists the missing variables and the container restarts in a loop.
+
+Create `.env` with `cp .env.example .env` and fill in every value, then `docker compose up -d`. If you run the bridge outside Docker, also export `MQTT_HOST` and `INFLUX_URL`.
+
+---
+
+## WiFi does not connect: `[wifi] failed, retry in ... ms`
+
+- **5 GHz network:** the ESP32 only supports **2.4 GHz**. If your router uses a single name for both bands (band steering), create a separate 2.4 GHz network or disable steering.
+- **WPA3 only:** use WPA2/WPA3 mixed mode or WPA2.
+- **SSID/password:** they are case-sensitive; check `WIFI_SSID` and `WIFI_PASSWORD` in `firmware/include/config.h`.
+- **Weak signal:** move the board closer to the router to rule out range.
+
+The firmware retries with exponential backoff (1 s, 2 s, 4 s … up to 60 s), so you do not need to restart the board when the router comes back.
+
+---
+
+## MQTT does not connect: `[mqtt] failed, state=N`
+
+| `state` | Meaning | What to check |
 |---|---|---|
-| `-4` | Timeout | Broker lento o red saturada. |
-| `-2` | No se pudo abrir la conexión TCP | `MQTT_HOST` y firewall (ver abajo). |
-| `4` | Usuario o contraseña incorrectos | `MQTT_USER`/`MQTT_PASSWORD` en `config.h` deben coincidir con `.env`. |
-| `5` | No autorizado | Igual que `4`; Mosquitto rechaza clientes sin credenciales válidas. |
+| `-4` | Timeout | Slow broker or congested network. |
+| `-2` | Could not open the TCP connection | `MQTT_HOST` and firewall (see below). |
+| `4` | Wrong user or password | `MQTT_USER`/`MQTT_PASSWORD` in `config.h` must match `.env`. |
+| `5` | Not authorized | Same as `4`; Mosquitto rejects clients without valid credentials. |
 
-**`state=-2`, causas típicas:**
+**`state=-2`, typical causes:**
 
-- `MQTT_HOST` no puede ser `localhost` ni `127.0.0.1`: es la IP **en tu red local** del equipo que corre Docker (`ipconfig getifaddr en0` en macOS, `hostname -I` en Linux).
-- El firewall del equipo bloquea el puerto 1883 (en macOS, permite conexiones entrantes a Docker).
-- El ESP32 y el servidor están en redes distintas (red de invitados, VLAN de IoT con aislamiento de clientes).
+- `MQTT_HOST` cannot be `localhost` or `127.0.0.1`: it is the **local network** IP of the machine running Docker (`ipconfig getifaddr en0` on macOS, `hostname -I` on Linux).
+- The machine's firewall blocks port 1883 (on macOS, allow incoming connections for Docker).
+- The ESP32 and the server are on different networks (guest network, IoT VLAN with client isolation).
 
-**Cambiaste las credenciales en `.env`:** el archivo de contraseñas de Mosquitto se regenera en cada arranque, así que basta con `docker compose up -d` (recrea los contenedores con las variables nuevas). Para comprobar las credenciales sin el ESP32:
+**You changed the credentials in `.env`:** Mosquitto's password file is regenerated on every start, so `docker compose up -d` is enough (it recreates the containers with the new variables). To check the credentials without the ESP32:
 
 ```bash
-docker compose exec mosquitto mosquitto_pub -u <usuario> -P <contraseña> -t devices/test/telemetry -m '{"temperature":20,"humidity":50}'
+docker compose exec mosquitto mosquitto_pub -u <user> -P <password> -t devices/test/telemetry -m '{"temperature":20,"humidity":50}'
 ```
 
 ---
 
-## NTP sin sincronizar (mensajes sin `ts`)
+## NTP not synced (messages without `ts`)
 
-**Síntoma:** el monitor serie muestra mensajes como `{"temperature":22.50,"humidity":48.20}` sin `ts`.
+**Symptom:** the serial monitor shows messages such as `{"temperature":22.50,"humidity":48.20}` without `ts`.
 
-El firmware omite el timestamp hasta que NTP sincroniza, y el bridge usa entonces la hora de recepción. Los datos siguen llegando, con un error de pocos milisegundos. Si nunca aparece `ts`:
+The firmware omits the timestamp until NTP syncs, and the bridge then uses the receive time. Data keeps arriving, with an error of a few milliseconds. If `ts` never appears:
 
-- La red bloquea UDP 123 hacia internet (común en redes corporativas o de universidad).
-- Configura un servidor NTP local en `NTP_SERVER` (muchos routers lo ofrecen; prueba con la IP del router).
+- The network blocks UDP 123 to the internet (common on corporate or university networks).
+- Set a local NTP server in `NTP_SERVER` (many routers offer one; try the router's IP).
 
 ---
 
 ## `[dht] read failed, check wiring`
 
-- Revisa el cableado con [hardware.md](hardware.md); DATA debe ir a `GPIO4` (o al pin de `DHT_PIN`).
-- Falta la resistencia pull-up de 10 kΩ (solo en sensor suelto de 4 pines).
-- Cable demasiado largo a 3,3 V.
-- Fallos aislados son normales en el DHT22; el firmware descarta esa lectura y lo intenta en el siguiente ciclo.
+- Check the wiring against [hardware.md](hardware.md); DATA must go to `GPIO4` (or to the `DHT_PIN` pin).
+- The 10 kΩ pull-up resistor is missing (bare 4-pin sensor only).
+- Cable too long at 3.3 V.
+- Occasional failures are normal with the DHT22; the firmware discards that reading and tries again on the next cycle.
 
 ---
 
-## No hay datos en Grafana
+## No data in Grafana
 
-1. **¿Llegan los mensajes al broker?** Suscríbete con `docker compose exec mosquitto mosquitto_sub -u <usuario> -P <contraseña> -t 'devices/#' -v`.
-2. **¿Los procesa el bridge?** `docker compose logs bridge` debe mostrar una línea por lectura. `Dropped message ...` explica por qué se descartó (JSON inválido, valor fuera de rango del DHT22, topic incorrecto).
-3. **Rango de tiempo:** el dashboard muestra las últimas 24 h; revisa la esquina superior derecha.
-4. **Variable `Device`:** si conectaste un dispositivo nuevo, refresca el dashboard para que aparezca en la lista.
+1. **Do messages reach the broker?** Subscribe with `docker compose exec mosquitto mosquitto_sub -u <user> -P <password> -t 'devices/#' -v`.
+2. **Does the bridge process them?** `docker compose logs bridge` should show one line per reading. `Dropped message ...` explains why one was discarded (invalid JSON, value outside the DHT22 range, wrong topic).
+3. **Time range:** the dashboard shows the last 24 h; check the top-right corner.
+4. **`Device` variable:** if you connected a new device, refresh the dashboard so it appears in the list.
 
 ---
 
-## InfluxDB rechaza el token después de editar `.env`
+## InfluxDB rejects the token after editing `.env`
 
-InfluxDB solo aplica `INFLUX_ORG`, `INFLUX_BUCKET`, `INFLUX_TOKEN` y el usuario admin en el **primer arranque** con el volumen vacío. Si los cambias después, el bridge y Grafana usan valores que InfluxDB no conoce (`unauthorized access` en los logs).
+InfluxDB only applies `INFLUX_ORG`, `INFLUX_BUCKET`, `INFLUX_TOKEN` and the admin user on the **first start** with an empty volume. If you change them later, the bridge and Grafana use values InfluxDB does not know (`unauthorized access` in the logs).
 
-- Si no te importan los datos: `docker compose down -v && docker compose up -d` (**borra todos los datos** de InfluxDB y Grafana).
-- Si quieres conservarlos: vuelve a poner en `.env` los valores originales.
+- If you do not care about the data: `docker compose down -v && docker compose up -d` (**deletes all** InfluxDB and Grafana data).
+- If you want to keep it: put the original values back in `.env`.

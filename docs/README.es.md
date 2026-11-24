@@ -79,7 +79,7 @@ El bridge valida cada mensaje y lo escribe en InfluxDB (measurement `climate`, t
 | DATA (`out`) | `GPIO4` |
 | GND (`-`) | `GND` |
 
-Diagrama del sensor suelto, alimentación y calibración en [docs/hardware.md](hardware.md).
+Diagrama del sensor suelto, alimentación y calibración en [docs/es/hardware.md](es/hardware.md).
 
 **Software:** Docker con Compose v2.20 o superior y [PlatformIO](https://platformio.org/install/cli) (CLI o extensión de VS Code). El firmware fija la plataforma `espressif32@6.9.0` (core Arduino-ESP32 2.0.17, ESP-IDF 4.4.7) en [platformio.ini](../firmware/platformio.ini).
 
@@ -99,7 +99,7 @@ Diagrama del sensor suelto, alimentación y calibración en [docs/hardware.md](h
 | `GRAFANA_ADMIN_USER` | Usuario admin de Grafana | `admin` |
 | `GRAFANA_ADMIN_PASSWORD` | Contraseña admin de Grafana | — |
 
-Las variables `INFLUX_*` solo se aplican en el primer arranque (ver [troubleshooting](troubleshooting.md#influxdb-rechaza-el-token-después-de-editar-env)). El bridge también puede correr fuera de Docker leyendo `MQTT_HOST`, `MQTT_PORT` (por defecto `1883`) e `INFLUX_URL` del entorno. Si falta alguna variable obligatoria, el bridge termina al arrancar y las lista todas.
+Las variables `INFLUX_*` solo se aplican en el primer arranque (ver [troubleshooting](es/troubleshooting.md#influxdb-rechaza-el-token-después-de-editar-env)). El bridge también puede correr fuera de Docker leyendo `MQTT_HOST`, `MQTT_PORT` (por defecto `1883`) e `INFLUX_URL` del entorno. Si falta alguna variable obligatoria, el bridge termina al arrancar y las lista todas.
 
 ### Firmware (`firmware/include/config.h`)
 
@@ -135,7 +135,7 @@ Las variables `INFLUX_*` solo se aplican en el primer arranque (ver [troubleshoo
 
 ## Troubleshooting
 
-Los problemas más comunes (puerto serie, WiFi de 5 GHz, credenciales MQTT, NTP sin sincronizar o la ausencia de datos en Grafana) están en [docs/troubleshooting.md](troubleshooting.md).
+Los problemas más comunes (puerto serie, WiFi de 5 GHz, credenciales MQTT, NTP sin sincronizar o la ausencia de datos en Grafana) están en [docs/es/troubleshooting.md](es/troubleshooting.md).
 
 ## Roadmap
 
@@ -144,7 +144,7 @@ Los problemas más comunes (puerto serie, WiFi de 5 GHz, credenciales MQTT, NTP 
 
 ## Contribuir
 
-Los issues y PR son bienvenidos. Lee [CONTRIBUTING.md](../CONTRIBUTING.md) para preparar el entorno y ejecutar los tests.
+Los issues y PR son bienvenidos. Lee [CONTRIBUTING.md](es/CONTRIBUTING.md) para preparar el entorno y ejecutar los tests.
 
 ## Licencia
 

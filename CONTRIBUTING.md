@@ -1,42 +1,45 @@
-# Contribuir
+# Contributing
 
-Gracias por tu interés. Esta plantilla prioriza ser **clara y fácil de usar**: un cambio que la vuelva más difícil de entender necesita una muy buena razón.
+[Leer en español](docs/es/CONTRIBUTING.md)
 
-## Antes de empezar
+Thanks for your interest. This template prioritizes being **clear and easy to use**: a change that makes it harder to understand needs a very good reason.
 
-- Para bugs, abre un issue con: placa, versión del repo, log serie (`pio device monitor`) y/o `docker compose logs bridge`. **Borra contraseñas y tokens** antes de pegar logs.
-- Para funcionalidades nuevas, abre primero un issue para conversarlo; revisa el [Roadmap](README.md#roadmap).
+## Before you start
 
-## Entorno de desarrollo
+- For bugs, open an issue with: board, repo version, serial log (`pio device monitor`) and/or `docker compose logs bridge`. **Remove passwords and tokens** before pasting logs.
+- For new features, open an issue first to discuss it; check the [Roadmap](README.md#roadmap).
+
+## Development environment
 
 ```bash
-# Firmware: debe compilar sin config.h (usa config.example.h)
+# Firmware: must build without config.h (it falls back to config.example.h)
 cd firmware && pio run
 
-# Bridge: tests con Python 3.12
+# Bridge: tests with Python 3.12
 cd bridge && pip install -r requirements.txt pytest && pytest -q
-# o sin Python 3.12 local:
+# or without a local Python 3.12:
 docker run --rm -v "$PWD/bridge:/app" -w /app python:3.12 sh -c "pip install -r requirements.txt pytest && pytest -q"
 
-# Stack completo
-cp .env.example .env && docker compose config -q   # valida sin levantar nada
+# Full stack
+cp .env.example .env && docker compose config -q   # validates without starting anything
+sh infra/mosquitto/test_entrypoint.sh
 docker compose up -d
 ```
 
 ## Pull requests
 
-1. Crea una rama desde `main`.
-2. Mantén el PR enfocado en un solo cambio.
-3. Si cambias el formato del mensaje MQTT, actualiza `parse_message` en el bridge, sus tests y el README.
-4. Si cambias configuración, actualiza `config.example.h` o `.env.example` y la tabla del README.
-5. Añade una entrada en la sección `Unreleased` de [CHANGELOG.md](CHANGELOG.md).
-6. CI (`pio run`, `pytest` y `docker compose config`) debe pasar.
+1. Create a branch from `main`.
+2. Keep the PR focused on a single change.
+3. If you change the MQTT message format, update `parse_message` in the bridge, its tests and the README.
+4. If you change configuration, update `config.example.h` or `.env.example` and the README table.
+5. Add an entry under `Unreleased` in [CHANGELOG.md](CHANGELOG.md).
+6. CI (`pio run`, `pytest`, `docker compose config` and the Mosquitto shell test) must pass.
 
-## Estilo
+## Style
 
-- **Firmware:** C++ del framework Arduino, sin dependencias nuevas si unas pocas líneas bastan. Comenta el *por qué*, no el *qué*.
-- **Bridge:** Python 3.12, solo librería estándar más `paho-mqtt` e `influxdb-client`. Configuración únicamente por variables de entorno.
-- **Secretos:** nunca en el código ni en commits. Usa placeholders en los archivos `*.example`.
-- **Commits:** en inglés y en imperativo (`Add ...`, `Fix ...`).
+- **Firmware:** Arduino-framework C++, no new dependencies if a few lines will do. Comment the *why*, not the *what*.
+- **Bridge:** Python 3.12, standard library plus `paho-mqtt` and `influxdb-client` only. Configuration through environment variables only.
+- **Secrets:** never in code or commits. Use placeholders in `*.example` files.
+- **Commits:** in English and imperative mood (`Add ...`, `Fix ...`).
 
-Al contribuir, aceptas que tu código se publique bajo la [licencia MIT](LICENSE).
+By contributing, you agree that your code is published under the [MIT license](LICENSE).
