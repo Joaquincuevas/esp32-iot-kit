@@ -5,6 +5,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+### Added
+
+- El firmware se detiene con un mensaje `[config]` claro si `config.h` conserva las credenciales de ejemplo.
+- Tests del bridge para la reconexión (re-suscripción), credenciales rechazadas, mensajes descartados y la escritura a InfluxDB.
+- Job de CI que valida el archivo de Docker Compose con `.env.example`.
+
+### Changed
+
+- El bridge informa de una sola vez todas las variables de entorno que faltan y valida `MQTT_PORT`, en lugar de fallar con la primera o con un traceback.
+
 ## [0.1.0] - 2026-11-03
 
 ### Added

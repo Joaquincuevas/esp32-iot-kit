@@ -19,7 +19,8 @@ cd bridge && pip install -r requirements.txt pytest && pytest -q
 docker run --rm -v "$PWD/bridge:/app" -w /app python:3.12 sh -c "pip install -r requirements.txt pytest && pytest -q"
 
 # Stack completo
-cp .env.example .env && docker compose up -d
+cp .env.example .env && docker compose config -q   # valida sin levantar nada
+docker compose up -d
 ```
 
 ## Pull requests
@@ -29,7 +30,7 @@ cp .env.example .env && docker compose up -d
 3. Si cambias el formato del mensaje MQTT, actualiza `parse_message` en el bridge, sus tests y el README.
 4. Si cambias configuración, actualiza `config.example.h` o `.env.example` y la tabla del README.
 5. Añade una entrada en la sección `Unreleased` de [CHANGELOG.md](CHANGELOG.md).
-6. CI (`pio run` + `pytest`) debe pasar.
+6. CI (`pio run`, `pytest` y `docker compose config`) debe pasar.
 
 ## Estilo
 
