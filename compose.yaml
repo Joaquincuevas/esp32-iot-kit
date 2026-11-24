@@ -1,4 +1,3 @@
-# Lets `docker compose up -d` run from the repo root using the root .env.
+# Lets `docker compose up -d` run from the repo root. Variables come from the root .env.
 include:
-  - path: infra/docker-compose.yml
-    env_file: .env
+  - infra/docker-compose.yml
