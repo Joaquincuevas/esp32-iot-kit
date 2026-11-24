@@ -8,12 +8,10 @@ services:
       MQTT_USER: ${MQTT_USER:?MQTT_USER is missing - copy .env.example to .env and fill it in}
       MQTT_PASSWORD: ${MQTT_PASSWORD:?MQTT_PASSWORD is missing - copy .env.example to .env and fill it in}
     # The password file is generated from .env on every start, so credentials live only there.
-    command: >
-      sh -c 'mosquitto_passwd -c -b /mosquitto/data/passwd "$$MQTT_USER" "$$MQTT_PASSWORD"
-      && chown mosquitto:mosquitto /mosquitto/data/passwd && chmod 0700 /mosquitto/data/passwd
-      && exec mosquitto -c /mosquitto/config/mosquitto.conf'
+    command: ["sh", "/entrypoint.sh"]
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/entrypoint.sh:/entrypoint.sh:ro
       - mosquitto-data:/mosquitto/data
 
   influxdb:

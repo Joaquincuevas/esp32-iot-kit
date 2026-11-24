@@ -26,6 +26,9 @@ REQUIRED_ENV = (
     "INFLUX_BUCKET",
 )
 
+# Prefix of the values in .env.example; starting with them would leave the stack with known credentials.
+PLACEHOLDER_PREFIX = "change-me"
+
 log = logging.getLogger("bridge")
 
 
@@ -72,6 +75,13 @@ def load_config(environ):
             "Missing required environment variables: "
             + ", ".join(missing)
             + ". With Docker Compose, copy .env.example to .env and fill it in."
+        )
+    placeholders = [name for name in REQUIRED_ENV if environ[name].startswith(PLACEHOLDER_PREFIX)]
+    if placeholders:
+        raise ConfigError(
+            "These variables still have their example value: "
+            + ", ".join(placeholders)
+            + ". Set real ones in .env (for example with: openssl rand -hex 24)."
         )
     config = {name: environ[name] for name in REQUIRED_ENV}
     raw_port = environ.get("MQTT_PORT") or "1883"
