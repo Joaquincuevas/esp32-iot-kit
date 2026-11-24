@@ -5,8 +5,8 @@ services:
     ports:
       - "1883:1883"
     environment:
-      MQTT_USER: ${MQTT_USER:?set MQTT_USER in .env}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:?set MQTT_PASSWORD in .env}
+      MQTT_USER: ${MQTT_USER:?MQTT_USER is missing - copy .env.example to .env and fill it in}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:?MQTT_PASSWORD is missing - copy .env.example to .env and fill it in}
     # The password file is generated from .env on every start, so credentials live only there.
     command: >
       sh -c 'mosquitto_passwd -c -b /mosquitto/data/passwd "$$MQTT_USER" "$$MQTT_PASSWORD"
@@ -23,11 +23,11 @@ services:
       - "127.0.0.1:8086:8086"
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUX_ADMIN_USER:?set INFLUX_ADMIN_USER in .env}
-      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_ADMIN_PASSWORD:?set INFLUX_ADMIN_PASSWORD in .env}
-      DOCKER_INFLUXDB_INIT_ORG: ${INFLUX_ORG:?set INFLUX_ORG in .env}
-      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUX_BUCKET:?set INFLUX_BUCKET in .env}
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN:?set INFLUX_TOKEN in .env}
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUX_ADMIN_USER:?INFLUX_ADMIN_USER is missing - copy .env.example to .env and fill it in}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_ADMIN_PASSWORD:?INFLUX_ADMIN_PASSWORD is missing - copy .env.example to .env and fill it in}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUX_ORG:?INFLUX_ORG is missing - copy .env.example to .env and fill it in}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUX_BUCKET:?INFLUX_BUCKET is missing - copy .env.example to .env and fill it in}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN:?INFLUX_TOKEN is missing - copy .env.example to .env and fill it in}
     volumes:
       - influxdb-data:/var/lib/influxdb2
 
@@ -37,8 +37,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?set GRAFANA_ADMIN_USER in .env}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?GRAFANA_ADMIN_USER is missing - copy .env.example to .env and fill it in}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is missing - copy .env.example to .env and fill it in}
       INFLUX_ORG: ${INFLUX_ORG}
       INFLUX_BUCKET: ${INFLUX_BUCKET}
       INFLUX_TOKEN: ${INFLUX_TOKEN}
