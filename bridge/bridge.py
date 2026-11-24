@@ -16,6 +16,16 @@ MEASUREMENT = "climate"
 TEMP_RANGE = (-40.0, 80.0)
 HUMIDITY_RANGE = (0.0, 100.0)
 
+REQUIRED_ENV = (
+    "MQTT_HOST",
+    "MQTT_USER",
+    "MQTT_PASSWORD",
+    "INFLUX_URL",
+    "INFLUX_TOKEN",
+    "INFLUX_ORG",
+    "INFLUX_BUCKET",
+)
+
 log = logging.getLogger("bridge")
 
 
@@ -50,37 +60,48 @@ def parse_message(topic, payload, received_at):
     return reading
 
 
-def env(name, default=None):
-    value = os.environ.get(name, default)
-    if not value:
-        sys.exit(f"Missing required environment variable {name}")
-    return value
+class ConfigError(Exception):
+    pass
 
 
-def main():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+def load_config(environ):
+    """Read settings from the environment, reporting every problem at once."""
+    missing = [name for name in REQUIRED_ENV if not environ.get(name)]
+    if missing:
+        raise ConfigError(
+            "Missing required environment variables: "
+            + ", ".join(missing)
+            + ". With Docker Compose, copy .env.example to .env and fill it in."
+        )
+    config = {name: environ[name] for name in REQUIRED_ENV}
+    raw_port = environ.get("MQTT_PORT") or "1883"
+    try:
+        config["MQTT_PORT"] = int(raw_port)
+    except ValueError:
+        raise ConfigError(f"MQTT_PORT must be an integer, got {raw_port!r}") from None
+    return config
 
-    influx = InfluxDBClient(url=env("INFLUX_URL"), token=env("INFLUX_TOKEN"), org=env("INFLUX_ORG"))
-    bucket = env("INFLUX_BUCKET")
-    # Batching mode retries failed writes with backoff, so a short InfluxDB outage loses nothing.
-    write_api = influx.write_api(
-        write_options=WriteOptions(batch_size=100, flush_interval=1_000),
-        error_callback=lambda conf, data, err: log.error("InfluxDB write failed: %s", err),
-        retry_callback=lambda conf, data, err: log.warning("InfluxDB write retry: %s", err),
-    )
 
-    def on_connect(client, userdata, flags, reason_code, properties):
+class Bridge:
+    """MQTT callbacks, kept apart from main() so they can be tested without a broker."""
+
+    def __init__(self, write_api, bucket):
+        self.write_api = write_api
+        self.bucket = bucket
+
+    def on_connect(self, client, userdata, flags, reason_code, properties):
         if reason_code.is_failure:
-            log.error("MQTT connection refused: %s", reason_code)
+            log.error("MQTT connection refused: %s (check MQTT_USER and MQTT_PASSWORD)", reason_code)
             return
+        # Subscribing here, not once at startup, restores the subscription after every reconnect.
         log.info("MQTT connected, subscribing to %s", TOPIC)
         client.subscribe(TOPIC, qos=1)
 
-    def on_disconnect(client, userdata, flags, reason_code, properties):
+    def on_disconnect(self, client, userdata, flags, reason_code, properties):
         if reason_code != 0:
             log.warning("MQTT disconnected (%s), reconnecting", reason_code)
 
-    def on_message(client, userdata, msg):
+    def on_message(self, client, userdata, msg):
         try:
             r = parse_message(msg.topic, msg.payload, int(time.time()))
         except ValueError as e:
@@ -93,19 +114,37 @@ def main():
             .field("humidity", r["humidity"])
             .time(r["ts"], WritePrecision.S)
         )
-        write_api.write(bucket=bucket, record=point)
+        self.write_api.write(bucket=self.bucket, record=point)
         log.info("%s temperature=%.2f humidity=%.2f ts=%d", r["device_id"], r["temperature"], r["humidity"], r["ts"])
 
+
+def main():
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+
+    try:
+        config = load_config(os.environ)
+    except ConfigError as e:
+        sys.exit(str(e))
+
+    influx = InfluxDBClient(url=config["INFLUX_URL"], token=config["INFLUX_TOKEN"], org=config["INFLUX_ORG"])
+    # Batching mode retries failed writes with backoff, so a short InfluxDB outage loses nothing.
+    write_api = influx.write_api(
+        write_options=WriteOptions(batch_size=100, flush_interval=1_000),
+        error_callback=lambda conf, data, err: log.error("InfluxDB write failed: %s", err),
+        retry_callback=lambda conf, data, err: log.warning("InfluxDB write retry: %s", err),
+    )
+    handlers = Bridge(write_api, config["INFLUX_BUCKET"])
+
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="esp32-iot-kit-bridge")
-    client.username_pw_set(env("MQTT_USER"), env("MQTT_PASSWORD"))
-    client.on_connect = on_connect
-    client.on_disconnect = on_disconnect
-    client.on_message = on_message
+    client.username_pw_set(config["MQTT_USER"], config["MQTT_PASSWORD"])
+    client.on_connect = handlers.on_connect
+    client.on_disconnect = handlers.on_disconnect
+    client.on_message = handlers.on_message
     client.reconnect_delay_set(min_delay=1, max_delay=60)
 
     signal.signal(signal.SIGTERM, lambda *_: client.disconnect())
 
-    host, port = env("MQTT_HOST"), int(env("MQTT_PORT", "1883"))
+    host, port = config["MQTT_HOST"], config["MQTT_PORT"]
     log.info("Connecting to MQTT %s:%d", host, port)
     client.connect_async(host, port)
     try:
