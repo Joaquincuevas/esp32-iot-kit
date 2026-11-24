@@ -87,6 +87,20 @@ def test_config_reports_all_missing_variables():
     assert ".env.example" in message
 
 
+@pytest.mark.parametrize("name", ["MQTT_PASSWORD", "INFLUX_TOKEN"])
+def test_config_rejects_example_values(name):
+    with pytest.raises(ConfigError, match="example value") as exc:
+        load_config({**FULL_ENV, name: "change-me-from-env-example"})
+    assert name in str(exc.value)
+
+
+def test_config_reports_every_example_value():
+    env = {**FULL_ENV, "MQTT_PASSWORD": "change-me-mqtt", "INFLUX_TOKEN": "change-me-influx-token"}
+    with pytest.raises(ConfigError) as exc:
+        load_config(env)
+    assert "MQTT_PASSWORD" in str(exc.value) and "INFLUX_TOKEN" in str(exc.value)
+
+
 def test_config_rejects_bad_port():
     with pytest.raises(ConfigError, match="MQTT_PORT"):
         load_config({**FULL_ENV, "MQTT_PORT": "abc"})

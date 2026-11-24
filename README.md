@@ -18,7 +18,7 @@ Requires an ESP32 DevKit with a DHT22 sensor ([wiring](#required-hardware)), Doc
    ```bash
    git clone https://github.com/joaquincuevas/esp32-iot-kit.git && cd esp32-iot-kit
    ```
-2. Create `.env` and replace **every** `change-me-*` value (for example with `openssl rand -hex 24`):
+2. Create `.env` and replace **every** `change-me-*` value (for example with `openssl rand -hex 24`). Mosquitto and the bridge refuse to start while a value still begins with `change-me`:
    ```bash
    cp .env.example .env
    ```

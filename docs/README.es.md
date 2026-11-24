@@ -18,7 +18,7 @@ Necesitas un ESP32 DevKit con un sensor DHT22 ([cableado](#hardware-requerido)),
    ```bash
    git clone https://github.com/joaquincuevas/esp32-iot-kit.git && cd esp32-iot-kit
    ```
-2. Crea `.env` y cambia **todos** los valores `change-me-*` (por ejemplo con `openssl rand -hex 24`):
+2. Crea `.env` y cambia **todos** los valores `change-me-*` (por ejemplo con `openssl rand -hex 24`). Mosquitto y el bridge se niegan a arrancar mientras algún valor empiece con `change-me`:
    ```bash
    cp .env.example .env
    ```
