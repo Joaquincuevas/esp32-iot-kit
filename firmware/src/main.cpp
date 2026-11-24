@@ -28,12 +28,23 @@ struct Backoff {
   void reset() { waitMs = 0; }
 };
 
+// True while config.h still has the placeholders from config.example.h (or empty credentials).
+static bool configIsPlaceholder() {
+  const char *placeholders[] = {"your-wifi-ssid", "your-wifi-password", "your-mqtt-user", "your-mqtt-password"};
+  const char *values[] = {WIFI_SSID, WIFI_PASSWORD, MQTT_USER, MQTT_PASSWORD};
+  for (size_t i = 0; i < 4; i++) {
+    if (values[i][0] == '\0' || strcmp(values[i], placeholders[i]) == 0) return true;
+  }
+  return false;
+}
+
 DHT dht(DHT_PIN, DHT22);
 WiFiClient net;
 PubSubClient mqtt(net);
 Backoff wifiBackoff, mqttBackoff;
 uint32_t lastReadMs;
 bool readPending = true;
+bool configInvalid = false;
 
 bool ensureWifi() {
   if (WiFi.status() == WL_CONNECTED) return true;
@@ -92,6 +103,8 @@ void publishReading() {
 
 void setup() {
   Serial.begin(115200);
+  configInvalid = configIsPlaceholder();
+  if (configInvalid) return;  // loop() keeps explaining what to fix
   dht.begin();
   WiFi.mode(WIFI_STA);
   configTime(0, 0, NTP_SERVER);
@@ -99,6 +112,12 @@ void setup() {
 }
 
 void loop() {
+  if (configInvalid) {
+    Serial.println("[config] WIFI_SSID, WIFI_PASSWORD, MQTT_USER or MQTT_PASSWORD still has its example value.");
+    Serial.println("[config] Copy firmware/include/config.example.h to config.h, fill it in and flash again.");
+    delay(5000);
+    return;
+  }
   if (!ensureWifi() || !ensureMqtt()) return;
   mqtt.loop();
 
