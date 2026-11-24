@@ -3,8 +3,14 @@
 # Refuses to start with the example password so a copied .env.example is never exposed on the network.
 set -eu
 
-: "${MQTT_USER:?MQTT_USER is missing - copy .env.example to .env and fill it in}"
-: "${MQTT_PASSWORD:?MQTT_PASSWORD is missing - copy .env.example to .env and fill it in}"
+# Explicit checks instead of ${VAR:?}: the exit status of that form differs between shells (dash gives 2).
+for var in MQTT_USER MQTT_PASSWORD; do
+  eval "value=\${$var:-}"
+  if [ -z "$value" ]; then
+    echo "ERROR: $var is missing - copy .env.example to .env and fill it in" >&2
+    exit 1
+  fi
+done
 
 case "$MQTT_PASSWORD" in
   change-me*)
